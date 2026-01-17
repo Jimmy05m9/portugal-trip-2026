@@ -1,121 +1,124 @@
 import streamlit as st
 
-# 設定網頁：極致對比、大字體、手機優化
-st.set_page_config(page_title="葡萄牙完整行程", page_icon="🇵🇹", layout="wide")
+# 極致清晰設定
+st.set_page_config(page_title="葡萄牙行程表", page_icon="🇵🇹", layout="wide")
 
-# CSS：確保在陽光下也清晰的黑白配色
+# 強制黑白高對比 CSS (解決看不見字的問題)
 st.markdown("""
     <style>
+    /* 1. 全域背景強制純白 */
     html, body, [class*="css"] { 
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
-        font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+        background-color: #FFFFFF !important; 
     }
-    .stApp { background-color: #FFFFFF !important; }
-    
-    /* 側邊欄深色背景，確保導航清晰 */
-    [data-testid="stSidebar"] { background-color: #1A1A1A !important; }
-    [data-testid="stSidebar"] * { color: #FFFFFF !important; }
+    .stApp { 
+        background-color: #FFFFFF !important; 
+    }
 
-    /* 勾選框文字：加大、加粗、純黑 */
-    .stCheckbox label p {
+    /* 2. 所有文字強制純黑，且字體加大 */
+    p, span, div, label, h1, h2, h3 {
         color: #000000 !important;
-        font-size: 20px !important;
-        font-weight: 800 !important;
-        margin-bottom: 5px;
+        font-family: "Microsoft JhengHei", "Heiti TC", sans-serif !important;
+    }
+
+    /* 3. 勾選框文字：加大至 24px、加粗、純黑 */
+    .stCheckbox label p {
+        font-size: 24px !important;
+        font-weight: 900 !important;
+        color: #000000 !important;
+        line-height: 1.6 !important;
+        padding-top: 5px;
+    }
+
+    /* 4. 側邊欄：雖然是深色，但確保文字是純白對比 */
+    [data-testid="stSidebar"] {
+        background-color: #000000 !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #FFFFFF !important;
+        font-size: 18px !important;
+    }
+
+    /* 5. 區塊線條：用粗黑線分隔，增加視覺辨識度 */
+    .day-header {
+        border-bottom: 5px solid #000000;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
     }
     
-    /* 區塊樣式 */
-    .time-badge { background-color: #000000; color: #FFFFFF; padding: 2px 10px; border-radius: 5px; font-weight: bold; }
-    .location-box { border-left: 10px solid #000000; background-color: #F5F5F5; padding: 15px; margin: 15px 0; }
+    .note-text {
+        font-size: 18px !important;
+        color: #333333 !important;
+        background-color: #F0F0F0;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# 側邊選單
+# 側邊欄導航
 with st.sidebar:
-    st.title("🇵🇹 2026 葡萄牙行程")
+    st.markdown("## 🇵🇹 葡萄牙清單")
     day = st.radio("切換日期：", [
-        "✈️ 2/13-14 啟程波多", "🍷 2/15 波多一日遊", "🚗 2/16 租車/杜羅河谷", 
-        "🎓 2/17 康布拉/阿格達", "🏰 2/18 辛特拉/還車", "🏛️ 2/19 里斯本(西)", 
-        "🚋 2/20 里斯本(中)", "🛍️ 2/21 里斯本(北)", "⛪ 2/22 最終採買", "🏠 2/23-24 返家"
+        "2/13-14 啟程波多", "2/15 波多一日遊", "2/16 租車/杜羅河谷", 
+        "2/17 康布拉/傘街", "2/18 辛特拉/還車", "2/19-21 里斯本全覽", 
+        "2/22 最終採買", "2/23-24 返家"
     ])
+    st.divider()
+    st.write("住宿摘要：")
+    st.write("• 波多: VIVA Liberty\n• 河谷: Salgueiral\n• 康布拉: Casas do Arco\n• 里斯本: Corpo Santo")
 
-st.title(f"📍 {day}")
+# 頁面大標題
+st.markdown(f'<h1 class="day-header">📍 {day}</h1>', unsafe_allow_html=True)
 
-# 渲染 Checklist 的函式
-def check(time, task, note=""):
-    st.checkbox(f"【{time}】 {task}", key=f"{day}_{time}_{task}")
-    if note:
-        st.caption(f"└ 💡 {note}")
+# 建立 Checklist 的功能
+def item(task, detail=""):
+    st.checkbox(task, key=f"{day}_{task}")
+    if detail:
+        st.markdown(f'<div class="note-text">└ ℹ️ {detail}</div>', unsafe_allow_html=True)
 
-# --- 2/13-14 出發與抵達 ---
-if day == "✈️ 2/13-14 啟程波多":
-    st.markdown('<div class="location-box"><b>航班與入住</b></div>', unsafe_allow_html=True)
-    check("2/13 22:10", "桃園機場集合 (TK25)", "行李直掛波多")
-    check("2/14 05:50", "抵達伊斯坦堡轉機")
-    check("2/14 11:30", "搭乘 TK1449 飛往波多 OPO")
-    check("2/14 19:15", "抵達波多機場並取行李")
-    check("2/14 20:30", "入住 VIVA Liberty 310", "休息備戰明天")
+# --- 根據 Excel 的完整內容 ---
 
-# --- 2/15 波多全日 ---
-elif day == "🍷 2/15 波多一日遊":
-    st.markdown('<div class="location-box"><b>步行探索波多</b></div>', unsafe_allow_html=True)
-    check("09:00", "萊羅書店入場", "需預約，全球最美書店")
-    check("10:30", "卡爾莫教堂", "欣賞外牆巨大藍瓷磚畫")
-    check("11:30", "教士塔 & 自由廣場")
-    check("13:00", "午餐：Tapabento", "熱門海鮮燉飯，建議預約")
-    check("15:00", "聖本托車站", "2萬片藍瓷壁畫")
-    check("16:30", "主教座堂 & 路易一世大橋", "步行至對岸加亞新城")
-    check("18:00", "加亞新城看夕陽", "品嚐波特酒，看杜羅河夜景")
+if day == "2/13-14 啟程波多":
+    item("2/13 22:10 桃園機場 TPE 集合", "阿聯酋航空行李直掛波多")
+    item("2/14 05:50 抵達伊斯坦堡轉機")
+    item("2/14 19:15 抵達波多 OPO 機場", "辦理入境、領取行李")
+    item("入住波多飯店：VIVA Liberty 310", "地址：Rua da Alegria 310, Porto")
 
-# --- 2/16 租車與河谷 ---
-elif day == "🚗 2/16 租車/杜羅河谷":
-    st.markdown('<div class="location-box"><b>自駕開啟</b></div>', unsafe_allow_html=True)
-    check("10:00", "Europcar 波多市區取車", "Mercedes-Benz V-Class 9人座")
-    check("11:30", "阿瑪蘭蒂 (Amarante) 慢遊", "聖公薩洛橋")
-    check("14:30", "皮尼昂 (Pinhão) 車站", "瓷磚畫背景")
-    check("16:00", "入住 Casa do Salgueiral Douro", "享受杜羅河谷景致")
+elif day == "2/15 波多一日遊":
+    item("09:00 萊羅書店入場", "需預約，全球最美書店")
+    item("卡爾莫教堂 (藍瓷磚牆)")
+    item("教士塔 & 自由廣場")
+    item("午餐：Tapabento", "熱門餐廳，建議預約海鮮燉飯")
+    item("聖本托車站 (2萬片壁畫)")
+    item("路易一世大橋看夕陽", "步行至加亞新城河岸")
 
-# --- 2/17 康布拉與阿格達 ---
-elif day == "🎓 2/17 康布拉/阿格達":
-    st.markdown('<div class="location-box"><b>大學城與傘街</b></div>', unsafe_allow_html=True)
-    check("10:00", "阿格達 (Águeda) 傘街", "彩色雨傘裝飾街道")
-    check("13:00", "康布拉大學 (Coimbra)", "喬安娜圖書館(需預約)")
-    check("16:00", "康布拉舊城區散步")
-    check("18:00", "入住 Casas do Arco", "體驗大學城氛圍")
+elif day == "2/16 租車/杜羅河谷":
+    item("10:00 Europcar 取車", "賓士 V-Class 9人座 (波多市區取)")
+    item("阿瑪蘭蒂 (Amarante) 慢遊", "參觀聖公薩洛橋與教堂")
+    item("皮尼昂 (Pinhão) 車站", "欣賞車站瓷磚畫")
+    item("入住河谷飯店：Casa do Salgueiral", "享受杜羅河谷景致")
 
-# --- 2/18 辛特拉 ---
-elif day == "🏰 2/18 辛特拉/還車":
-    st.markdown('<div class="location-box"><b>童話城堡與陸地之最</b></div>', unsafe_allow_html=True)
-    check("10:00", "佩納宮 (Pena Palace)", "強烈建議搭接駁車或 Uber 上山")
-    check("13:00", "雷加萊拉莊園", "探索奇幻地底塔")
-    check("15:30", "羅卡角 (Cabo da Roca)", "歐亞大陸最西端證書")
-    check("18:30", "入住 Hotel Arribas", "海邊飯店")
-    check("20:00", "里斯本市中心還車 (Europcar)", "滿油還車，確認檢查")
+elif day == "2/17 康布拉/傘街":
+    item("阿格達 (Águeda) 傘街", "彩色雨傘街道拍照")
+    item("康布拉大學 (Coimbra)", "參觀喬安娜圖書館")
+    item("入住康布拉飯店：Casas do Arco")
 
-# --- 2/19-21 里斯本 ---
-elif day == "🏛️ 2/19 里斯本(西)":
-    st.markdown('<div class="location-box"><b>貝倫區朝聖</b></div>', unsafe_allow_html=True)
-    check("10:00", "熱羅尼莫斯修道院", "曼努埃爾建築代表")
-    check("12:00", "貝倫正宗蛋塔店 (Pastéis de Belém)")
-    check("14:00", "發現者紀念碑 & 貝倫塔")
-    check("18:00", "入住 Corpo Santo Historical Hotel", "五星級服務")
+elif day == "2/18 辛特拉/還車":
+    item("10:00 佩納宮 (Pena Palace)", "強烈建議提早抵達避開人潮")
+    item("雷加萊拉莊園 (地底塔)")
+    item("羅卡角 (Cabo da Roca)", "歐亞大陸最西端紀念碑")
+    item("20:00 里斯本市區還車", "Europcar 還車，記得加滿油")
+    item("入住海邊飯店：Hotel Arribas")
 
-elif day == "🚋 2/20 里斯本(中)":
-    st.markdown('<div class="location-box"><b>經典電車之旅</b></div>', unsafe_allow_html=True)
-    check("09:00", "28號黃色電車全線體驗", "建議起站 Martim Moniz 搭乘")
-    check("11:00", "聖露西亞觀景台", "俯瞰 Alfama 舊城區")
-    check("13:00", "Time Out Market 午餐")
-    check("15:00", "聖胡斯塔升降機")
+elif day == "2/19-21 里斯本全覽":
+    item("貝倫區：熱羅尼莫斯修道院")
+    item("貝倫區：正宗蛋塔始祖店", "Pastéis de Belém")
+    item("搭乘 28 號黃色電車", "建議起站 Martim Moniz 搭乘")
+    item("聖胡斯塔升降機")
+    item("入住五星飯店：Corpo Santo", "市中心位置，服務極佳")
 
-elif day == "🛍️ 2/21 里斯本(北)":
-    check("10:00", "自由大道 (Av. da Liberdade) 採買", "精品與當地名產")
-    check("14:00", "愛德華七世公園", "修剪整齊的迷宮花園")
-    check("18:00", "晚餐：里斯本海鮮拼盤")
-
-# --- 歸途 ---
-elif day == "🏠 2/23-24 返家":
-    st.markdown('<div class="location-box"><b>再見葡萄牙</b></div>', unsafe_allow_html=True)
-    check("2/23 08:00", "里斯本機場報到", "辦理退稅手續")
-    check("2/23 10:35", "搭乘 EK192 飛往杜拜")
-    check("2/24 14:15", "抵達高雄小港機場 (KHH)", "溫暖的家")
+elif day == "2/23-24 返家":
+    item("08:00 前往里斯本機場", "提早辦理退稅手續")
+    item("10:35 搭乘 EK192 飛往杜拜")
+    item("2/24 14:15 抵達小港機場", "回到溫暖的家")
