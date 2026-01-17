@@ -1,113 +1,133 @@
 import streamlit as st
 
-# 設定網頁標題與風格
-st.set_page_config(page_title="2026 葡萄牙之旅", page_icon="🇵🇹", layout="wide")
+# 網頁設定：優化對比度與字體
+st.set_page_config(page_title="2026 葡萄牙之旅 Checklist", page_icon="🇵🇹", layout="wide")
 
-# 自定義 Threads 風格 CSS
+# 自定義 CSS：強化文字顏色對比
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
-    html, body, [class*="css"] { font-family: 'Noto Sans TC', sans-serif; background-color: #f7f7f7; }
-    .stApp { background-color: #f7f7f7; }
-    
-    .post-card {
-        background-color: white;
-        padding: 20px;
-        border-radius: 18px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        margin-bottom: 20px;
-        border: 1px solid #efefef;
+    /* 全域文字顏色改為深黑，背景改為白色 */
+    html, body, [class*="css"] { 
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #1A1A1A !important;
     }
-    .time-tag { color: #bc6c25; font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; }
-    .activity-title { font-size: 1.2rem; font-weight: bold; color: #333; margin-bottom: 8px; }
-    .note-box { background-color: #f8f9fa; padding: 12px; border-radius: 10px; font-size: 0.85rem; color: #666; border-left: 4px solid #dee2e6; }
-    .tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; margin-right: 5px; }
-    .tag-hotel { background-color: #e3f2fd; color: #0d47a1; }
-    .tag-car { background-color: #fff3e0; color: #e65100; }
-    .tag-food { background-color: #f1f8e9; color: #1b5e20; }
+    .stApp { background-color: #FFFFFF; }
+    
+    /* 側邊欄深色背景，白字 */
+    [data-testid="stSidebar"] {
+        background-color: #2D3436 !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #FFFFFF !important;
+    }
+
+    /* 行程卡片樣式：增加深色邊框加強視覺邊界 */
+    .itinerary-card {
+        border: 2px solid #EEEEEE;
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        background-color: #FAFAFA;
+    }
+    
+    /* 標籤樣式：顏色加深確保可讀性 */
+    .badge {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        margin-right: 5px;
+        color: white !important;
+    }
+    .bg-blue { background-color: #0984E3; } /* 交通 */
+    .bg-green { background-color: #00B894; } /* 景點 */
+    .bg-orange { background-color: #E17055; } /* 飯店 */
+    
+    /* 勾選框文字加大加深 */
+    .stCheckbox label {
+        font-size: 1.1rem !important;
+        font-weight: 500 !important;
+        color: #000000 !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 # 側邊導航
 with st.sidebar:
-    st.title("🇵🇹 旅程目錄")
-    day = st.radio("選擇日期", [
-        "🌟 行程總覽", "2/13 出發", "2/14 波多抵達", "2/15 波多探索", 
-        "2/16 杜羅河谷(租車)", "2/17 康布拉", "2/18 辛特拉(還車)", 
-        "2/19 里斯本(北)", "2/20 里斯本(西)", "2/21 里斯本(市區)", 
-        "2/22 最終採買", "2/23-24 歸途"
+    st.title("🇵🇹 葡萄牙清單")
+    day = st.radio("選擇日期：", [
+        "🏠 行程總覽", "✈️ 2/13-14 出發/波多", "🍷 2/15 波多探索", 
+        "🍇 2/16 杜羅河谷", "🎓 2/17 康布拉", "🏰 2/18 辛特拉", 
+        "🌉 2/19-21 里斯本", "🛍️ 2/22 最終採買", "✈️ 2/23-24 歸途"
     ])
     st.divider()
-    st.write("### 🏠 住宿速查")
-    st.caption("2/14-15: Torel Avantgarde")
-    st.caption("2/16: Quinta de la Rosa")
-    st.caption("2/17: Sapientia Boutique")
-    st.caption("2/18: Sintra Marmòris")
-    st.caption("2/19-22: Corpo Santo")
+    st.write("### 📌 住宿清單")
+    st.write("2/14-16: VIVA Liberty 310")
+    st.write("2/16-17: Casa do Salgueiral")
+    st.write("2/17-18: Casas do Arco")
+    st.write("2/18-19: Hotel Arribas")
+    st.write("2/19-23: Corpo Santo")
 
-# --- 邏輯呈現 ---
+# 定義顯示勾選清單的函式
+def task_item(time, label, text, category="景點"):
+    badge_class = "bg-green"
+    if "交通" in category or "機" in category: badge_class = "bg-blue"
+    elif "飯店" in category or "住" in category: badge_class = "bg-orange"
+    
+    col_time, col_check = st.columns([1, 5])
+    with col_time:
+        st.markdown(f"**{time}**")
+    with col_check:
+        # 使用唯一 key 避免衝突
+        st.checkbox(f"{text}", key=f"{day}_{time}_{text}")
+        st.markdown(f'<span class="badge {badge_class}">{category}</span>', unsafe_allow_html=True)
+    st.divider()
 
-if day == "🌟 行程總覽":
-    st.title("2026 葡萄牙家族冒險")
-    st.markdown("### 全行程 Excel 數據同步版")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("""<div class="post-card"><div class="activity-title">🚗 租車資訊</div>
-        取車：2/16 10:00 (Porto)<br>還車：2/18 20:00 (Lisbon)<br>車型：Mercedes-Benz V-Class (9人座)</div>""", unsafe_allow_html=True)
-    with col2:
-        st.markdown("""<div class="post-card"><div class="activity-title">🛂 準備清單</div>
-        護照正本、國際駕照、歐規轉接頭、網卡、好走的鞋。</div>""", unsafe_allow_html=True)
+# --- 內容呈現 ---
 
-elif day == "2/14 波多抵達":
-    st.header("2/14 (六) 波多抵達")
-    st.markdown("""<div class="post-card"><div class="time-tag">19:15</div><div class="activity-title">抵達 OPO 機場</div>
-    辦理入境後搭車前往飯店 check-in。</div>""", unsafe_allow_html=True)
-    st.markdown("""<div class="post-card"><div class="tag tag-hotel">HOTEL</div><div class="activity-title">Torel Avantgarde</div>
-    地址：R. de Entre-Quintas 220, Porto</div>""", unsafe_allow_html=True)
+if day == "🏠 行程總覽":
+    st.header("🌟 旅程重點檢查 (Checklist)")
+    st.checkbox("帶齊所有護照、國際駕照")
+    st.checkbox("歐規兩圓孔轉接頭、快充頭")
+    st.checkbox("波多 & 里斯本景點預約門票 (萊羅書店/佩納宮)")
+    st.checkbox("歐元現金與海外刷卡信用卡")
+    st.image("https://images.unsplash.com/photo-1555881400-74d7acaacd8b?q=80&w=2000")
 
-elif day == "2/15 波多探索":
+elif day == "✈️ 2/13-14 出發/波多":
+    st.header("2/13 - 2/14 啟程")
+    task_item("22:10", "交通", "桃園機場 TPE 集合 (TK25)", "交通")
+    task_item("05:50", "交通", "抵達伊斯坦堡轉機", "交通")
+    task_item("11:30", "交通", "搭乘 TK1449 飛往波多 OPO", "交通")
+    task_item("19:15", "飯店", "入住 VIVA Liberty 310 (波多)", "飯店")
+
+elif day == "🍷 2/15 波多探索":
     st.header("2/15 (日) 波多舊城")
-    activities = [
-        ("09:00", "萊羅書店", "全球最美書店，需提前預約門票。"),
-        ("11:00", "聖本托車站", "欣賞兩萬片藍瓷壁畫。"),
-        ("13:00", "午餐：Tapabento", "推薦海鮮燉飯（需預約）。"),
-        ("16:00", "路易一世大橋", "步行至上層看夕陽。")
-    ]
-    for time, title, note in activities:
-        st.markdown(f"""<div class="post-card"><div class="time-tag">{time}</div><div class="activity-title">{title}</div>
-        <div class="note-box">{note}</div></div>""", unsafe_allow_html=True)
+    task_item("09:00", "景點", "萊羅書店 (Livraria Lello) 入場", "景點")
+    task_item("11:00", "景點", "聖本托車站 (São Bento) 看壁畫", "景點")
+    task_item("13:00", "美食", "午餐：Tapabento (建議預約)", "景點")
+    task_item("16:00", "景點", "路易一世大橋看夕陽", "景點")
 
-elif day == "2/16 杜羅河谷(租車)":
-    st.header("2/16 (一) 自駕起點")
-    st.markdown("""<div class="post-card"><div class="tag tag-car">RENTAL</div><div class="time-tag">10:00</div>
-    <div class="activity-title">Europcar 取車 (Porto City Center)</div>
-    確認車輛狀況、保險、滿油取還。</div>""", unsafe_allow_html=True)
-    st.markdown("""<div class="post-card"><div class="time-tag">15:00</div><div class="activity-title">Pinhao 酒莊巡禮</div>
-    入住 Quinta de la Rosa，享受河谷晚餐。</div>""", unsafe_allow_html=True)
+elif day == "🍇 2/16 杜羅河谷":
+    st.header("2/16 (一) 租車自駕")
+    task_item("10:00", "交通", "波多市區 Europcar 取車", "交通")
+    task_item("14:00", "景點", "前往杜羅河谷酒莊巡禮", "景點")
+    task_item("16:00", "飯店", "入住 Casa do Salgueiral Douro", "飯店")
 
-elif day == "2/18 辛特拉(還車)":
-    st.header("2/18 (三) 童話與最西端")
-    items = [
-        ("10:00", "佩納宮", "繽紛色彩的皇宮，人潮眾多建議早到。"),
-        ("14:00", "雷加萊拉莊園", "探索奇幻地底深井。"),
-        ("17:00", "羅卡角 Cabo da Roca", "歐亞大陸最西端紀念碑。"),
-        ("20:00", "里斯本還車", "Europcar Lisbon Downtown 還車。")
-    ]
-    for t, a, n in items:
-        st.markdown(f"""<div class="post-card"><div class="time-tag">{t}</div><div class="activity-title">{a}</div>
-        <div class="note-box">{n}</div></div>""", unsafe_allow_html=True)
+elif day == "🏰 2/18 辛特拉":
+    st.header("2/18 (三) 童話辛特拉")
+    task_item("10:00", "景點", "佩納宮 (Pena Palace)", "景點")
+    task_item("14:00", "景點", "雷加萊拉莊園", "景點")
+    task_item("17:00", "景點", "羅卡角 (Cabo da Roca) 歐亞最西端", "景點")
+    task_item("20:00", "交通", "里斯本市區還車 (Europcar)", "交通")
 
-elif day == "2/19-21 里斯本(市區)":
-    st.header("🌉 里斯本精華")
-    st.markdown("""<div class="post-card"><div class="tag tag-food">MUST EAT</div><div class="activity-title">貝倫區正宗蛋塔</div>
-    Pastéis de Belém，搭配肉桂粉更道地。</div>""", unsafe_allow_html=True)
-    st.markdown("""<div class="post-card"><div class="activity-title">28 號黃色電車</div>
-    建議從起站搭乘，避開人潮，體驗坡道穿梭。</div>""", unsafe_allow_html=True)
+elif day == "🌉 2/19-21 里斯本":
+    st.header("里斯本精彩行程")
+    task_item("ALL", "景點", "搭乘 28 號黃色電車", "景點")
+    task_item("ALL", "景點", "貝倫區正宗蛋塔店朝聖", "景點")
+    task_item("ALL", "景點", "聖胡斯塔升降機俯瞰市區", "景點")
+    st.info("💡 里斯本住宿：Corpo Santo Historical Hotel (連住四晚)")
 
-# 歸途
-elif day == "2/23-24 歸途":
-    st.header("✈️ 結束旅程")
-    st.markdown("""<div class="post-card"><div class="time-tag">2/23 08:00</div><div class="activity-title">前往 LIS 機場</div>
-    搭乘 EK192 經杜拜轉機。</div>""", unsafe_allow_html=True)
-    st.markdown("""<div class="post-card"><div class="time-tag">2/24 14:15</div><div class="activity-title">抵達小港機場</div>
-    回到溫暖的家。</div>""", unsafe_allow_html=True)
+elif day == "✈️ 2/23-24 歸途":
+    st.header("2/23 - 2/24 返家")
+    task_item("08:00", "交通", "前往 LIS 機場 (EK192)", "交通")
+    task_item("14:15", "交通", "2/24 抵達高雄小港機場", "交通")
